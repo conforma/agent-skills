@@ -1,6 +1,6 @@
 # Claude EC Skills
 
-Claude Code skills and commands for [Conforma](https://github.com/conforma/cli) policy debugging and sprint management.
+Claude Code skills and commands for [Conforma](https://github.com/conforma/cli) policy debugging, vulnerability patching, and sprint management.
 
 ## Overview
 
@@ -10,6 +10,7 @@ These tools help you:
 - Assess Jira stories for implementation readiness before backlog grooming
 - Track mid-sprint story additions with structured tagging
 - Generate sprint reports surfacing unplanned work
+- Prepare verified Conforma CLI vulnerability patches for UBI RPMs and Go modules
 
 ## Installation
 
@@ -111,6 +112,16 @@ Core skill for investigating individual policy violations. Automatically invoked
 - "What does the `rpm_packages.unique_version` rule check?"
 - "Debug this EC validation error: [paste error]"
 
+### `vuln-patcher`
+
+Prepare verified UBI RPM or Go-module patches for Conforma CLI vulnerability tickets. It uses Jira read access and a validated CLI checkout. If no checkout is available, it asks whether to use a supplied path or clone the user's personal fork. It stops before pushing or opening a PR until approved.
+
+The skill follows the Agent Skills format. Other compatible harnesses may need their skill loader pointed at `.claude/skills`.
+
+**Example prompts:**
+- "Assess EC-1234 as a Conforma vulnerability and prepare a patch."
+- "Check RHSA 172528 against current Conforma releases."
+
 ## File Structure
 
 ```text
@@ -129,6 +140,11 @@ Core skill for investigating individual policy violations. Automatically invoked
 │   │   ├── SKILL.md             # Skill definition
 │   │   ├── debugging.md         # Full debugging reference
 │   │   └── summarize_violations.py  # Log parsing utility
+│   └── vuln-patcher/
+│       ├── SKILL.md
+│       └── scripts/
+│           ├── active-release-branches.sh
+│           └── assess.sh
 └── settings.local.json          # Claude Code settings
 ```
 
