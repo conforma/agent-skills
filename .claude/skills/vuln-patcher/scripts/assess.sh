@@ -10,7 +10,11 @@ fail() {
   exit 2
 }
 
-HACKS_URL='https://raw.githubusercontent.com/conforma/hacks/main'
+# Pin executable helpers to an immutable, reviewed upstream revision and content hashes.
+HACKS_REVISION='74fe1feb3778ac9be49698008298609a98cced48'
+HACKS_URL="https://raw.githubusercontent.com/conforma/hacks/$HACKS_REVISION"
+CURRENT_RELEASE_TAGS_SHA256='aee9ba83e07d3741d2618a812f3db10869ddbabfa2e02e73d0c429a90f2dd23a'
+RPM_VERSION_CHECKER_SHA256='0f7b8f4e47af6440e4c2616ccc249a775bcb9984252ebcb523ab235d53731318'
 HACKS_DIR=''
 REPO_DIR=''
 RPM_NVR=''
@@ -43,7 +47,7 @@ done
 [[ -f "$SCRIPT_DIR/active-release-branches.sh" ]] || fail "missing assessor helper: $SCRIPT_DIR/active-release-branches.sh"
 git -C "$REPO_DIR" rev-parse --show-toplevel >/dev/null 2>&1 || fail "not a git checkout: $REPO_DIR"
 
-for tool in git podman skopeo rpm rpmdev-vercmp jq yq curl; do
+for tool in git podman skopeo rpm rpmdev-vercmp jq yq curl sha256sum; do
   command -v "$tool" >/dev/null 2>&1 || fail "missing required tool: $tool"
 done
 
@@ -71,6 +75,16 @@ for script in current-release-tags.sh rpm-version-checker.sh; do
     "$script_url" -o "$HACKS_DIR/$script" ||
     fail "could not download $script_url"
   [[ -s "$HACKS_DIR/$script" ]] || fail "downloaded empty script: $script_url"
+  case "$script" in
+    current-release-tags.sh) expected_sha256="$CURRENT_RELEASE_TAGS_SHA256" ;;
+    rpm-version-checker.sh) expected_sha256="$RPM_VERSION_CHECKER_SHA256" ;;
+    *) fail "unexpected assessor script: $script" ;;
+  esac
+  actual_sha256="$(sha256sum "$HACKS_DIR/$script")" ||
+    fail "could not calculate SHA-256 for $script_url"
+  actual_sha256="${actual_sha256%% *}"
+  [[ "$actual_sha256" == "$expected_sha256" ]] ||
+    fail "SHA-256 mismatch for $script_url"
   chmod 700 "$HACKS_DIR/$script" ||
     fail "could not make downloaded script executable: $script_url"
 done

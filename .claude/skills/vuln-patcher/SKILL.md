@@ -94,8 +94,8 @@ Resolve and verify `CLI_REPO` before mutation:
 
 - Verify `origin` is the user's personal fork and `upstream` is the intended Conforma repository by inspecting `git remote -v`.
 - Require a clean worktree.
-- Check `git`, `go`, `podman`, `skopeo`, `rpm`, `rpmdev-vercmp`, `jq`, `yq`, and `curl` as required by the selected remediation class.
-- For RPM assessment, the bundled assessor downloads `current-release-tags.sh` and `rpm-version-checker.sh` from `https://raw.githubusercontent.com/conforma/hacks/main/` into a temporary directory and removes them on exit. No `conforma/hacks` checkout is needed.
+- Check `git`, `go`, `podman`, `skopeo`, `rpm`, `rpmdev-vercmp`, `jq`, `yq`, `curl`, and `sha256sum` as required by the selected remediation class.
+- For RPM assessment, `scripts/assess.sh` downloads `current-release-tags.sh` and `rpm-version-checker.sh` from an immutable `conforma/hacks` commit, verifies each expected SHA-256 before execution, and removes them on exit. The pinned revision and hashes are in the script; no `conforma/hacks` checkout is needed.
 - Fetch upstream remote-tracking refs with `git fetch upstream --prune`.
 - Run the bundled release-branch helper on every invocation. It fetches the current Pyxis configuration and extracts the `rhtas/ec-rhel9` content-stream tags:
 
@@ -166,19 +166,20 @@ Require the module path and fixed version from the advisory or authoritative lin
 For each affected release branch:
 
 1. Inspect `go.mod`, `tools/go.mod`, and the relevant `go.sum` entries at the current upstream tip.
-2. If the selected module version is already at or above the fixed version, inspect the published image's `org.opencontainers.image.revision` label and verify it matches the release revision containing that dependency update. Report the ticket as already fixed for that release; do not create a no-op patch.
-3. Otherwise create a branch from current `upstream/<base>` and update the module with Go tooling. In the repository root, use:
+2. From each module root containing the target, run `go list -m -json "$MODULE"` and inspect both `Version` and `Replace`. If a replacement is present, evaluate the replacement's effective version or source, not just the version required in `go.mod`. For a local-path replacement or one without a comparable version, inspect its `go.mod` and source. If you cannot verify that the effective implementation includes the fix, classify the release as `blocked`; do not claim it is fixed.
+3. If the effective module/replacement version is at or above the fixed version, or a local replacement's source is verified to contain the fix, inspect the published image's `org.opencontainers.image.revision` label and verify it matches the release revision containing that dependency update. Report the ticket as already fixed for that release; do not create a no-op patch.
+4. Otherwise create a branch from current `upstream/<base>` and update the module with Go tooling. In the repository root, use:
 
    ```bash
    go get "$MODULE@$SELECTED_VERSION"
    go mod tidy
    ```
 
-   If `tools/go.mod` exists, run the equivalent commands from `tools/`. Keep the change limited to the named module and generated module files.
-4. Run `go mod verify`, the repository's focused tests, and `go test ./...`. If `tools/go.mod` exists, run its module verification and tests too. Do not skip failures.
-5. Reinspect `go.mod`, `tools/go.mod`, and the image/source evidence before reporting the release fixed.
-6. Create the commit with the mandatory Go-module commit template below.
-7. Stop before pushing; show the exact push command and rendered PR metadata for approval.
+   If `tools/go.mod` exists, run the equivalent commands from `tools/`. Keep the change limited to the named module and generated module files. Do not modify an unverified local replacement as a substitute for an authoritative fixed version.
+5. Run `go mod verify`, the repository's focused tests, and `go test ./...`. If `tools/go.mod` exists, run its module verification and tests too. Do not skip failures.
+6. Reinspect `go.mod`, `tools/go.mod`, the effective replacement, and the image/source evidence before reporting the release fixed.
+7. Create the commit with the mandatory Go-module commit template below.
+8. Stop before pushing; show the exact push command and rendered PR metadata for approval.
 
 A Go-module version in source is not by itself proof that a published image contains it. Correlate the image source-revision label with the inspected release commit, or report that artifact verification is unavailable.
 
@@ -308,7 +309,8 @@ If no patch is needed, say why for every affected release. If the issue is unsup
 - Non-RPM/non-Go vulnerability: classify and hand off; do not guess.
 - UBI latest lacks an RPM fix: stop; do not bump a digest.
 - Registry authentication failure: request host login and report any UBI-only evidence separately.
-- Download or execution failure for either `conforma/hacks` assessor script: stop and report the exact URL and error.
+- Download, checksum mismatch, or execution failure for either pinned `conforma/hacks` assessor script: stop and report the exact URL and error.
+- Unverifiable or vulnerable module replacement: classify the release as `blocked`; do not report it fixed based only on the required version.
 - Pyxis configuration read or parse failure: stop; never use a stale release list.
 - Dirty worktree or ambiguous remotes: stop before branch work.
 - Already-fixed release: provide evidence and do not force a commit.
