@@ -10,11 +10,7 @@ Invoke the skill with a prompt like:
 Create a policy to ensure all npm packages come from registry.npmjs.org
 ```
 
-Or use the slash command:
-
-```
-/generate-policy
-```
+Or tell your agent to read this skill's `SKILL.md` and provide the required inputs.
 
 ## What You Provide
 
@@ -73,7 +69,7 @@ The skill supports two complementary policy domains:
 - "Validate SLSA provenance shows builds from authorized source repositories"
 - "Enforce builder ID matches our CI/CD system"
 
-For complete SLSA builder ID examples, see the [v0.2 PASS example](../../../examples/07-slsa-v02-builder-id-validation-pass.md), the [v1.0 FAIL example](../../../examples/08-slsa-v1-builder-id-validation-fail.md), and the [SLSA provenance structure reference](reference/slsa-provenance-structure.md).
+For complete SLSA builder ID examples, see the [v0.2 PASS example](examples/07-slsa-v02-builder-id-validation-pass.md), the [v1.0 FAIL example](examples/08-slsa-v1-builder-id-validation-fail.md), and the [SLSA provenance structure reference](reference/slsa-provenance-structure.md).
 
 ## Generated Command
 

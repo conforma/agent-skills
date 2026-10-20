@@ -1,7 +1,6 @@
 ---
 name: generate-policy
 description: Generate complete Conforma validation setup for container images. Creates policy rules, tests, configuration, and ready-to-run commands. Users don't need to know Rego, Conforma, or SBOM formats.
-allowed-tools: Read, Bash, Glob, Grep, Task, Write, Edit
 ---
 
 # Generate Policy Skill
@@ -20,7 +19,7 @@ Help users validate container images with Conforma policies. The user doesn't ne
 | Source repository | Expected source repo for provenance correlation (SLSA provenance) | `https://github.com/org/repo` |
 | Build type | Expected build system type (SLSA provenance) | `"tekton.dev/v1/PipelineRun"` |
 
-See [Policy Requirements Template](../../../POLICY_REQUIREMENTS_TEMPLATE.md) for a complete requirements checklist.
+Collect the inputs in this section, especially the validation requirements and any required SLSA fields. Ask the user about missing information before generating files.
 
 ## What to Generate
 

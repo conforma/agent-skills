@@ -1,10 +1,4 @@
----
-name: renovate-triage
-description: Triage and manage automated dependency update PRs (Renovate, Konflux) across the conforma and enterprise-contract GitHub orgs. Use when discussing Renovate PR backlog, dependency update management, or automated PR triage.
-allowed-tools: Read, Bash, Glob, Grep, Task, Write, Edit
----
-
-# Renovate PR Triage Skill
+# Renovate PR Triage Rules
 
 Triage and manage automated dependency update PRs across the conforma and enterprise-contract GitHub orgs. Categorizes PRs by risk, verifies Go container image availability, detects merge cascades, and coordinates approved actions (approve + auto-merge, or close with comment).
 
@@ -15,10 +9,10 @@ Triage and manage automated dependency update PRs across the conforma and enterp
 - Checking which dependency PRs are safe to merge
 - Cleaning up stale or abandoned automated PRs
 
-## Commands
+## Skills
 
-- `/renovate-triage` — Analyze all open automated PRs, categorize them, write a triage report
-- `/renovate-act` — Execute approved actions from a triage report
+- `renovate-triage` — Analyze open automated PRs, categorize them, and write a triage report.
+- `renovate-act` — Execute user-approved actions from a triage report.
 
 ## Categorization Rules
 
@@ -171,11 +165,11 @@ PRs on the same `(repo, base_branch)` that update the same dependency ecosystem 
 
 ## Report Location
 
-Reports are written to `.claude/reports/`:
-- `.claude/reports/renovate-triage-{YYYY-MM-DD}.json` — structured data for `/renovate-act`
-- `.claude/reports/renovate-triage-{YYYY-MM-DD}.md` — human-readable report
+Reports are written under `.conforma/reports/` in the current project directory:
+- `.conforma/reports/renovate-triage-{YYYY-MM-DD}.json` — structured data for the `renovate-act` skill.
+- `.conforma/reports/renovate-triage-{YYYY-MM-DD}.md` — human-readable report.
 
-This directory is gitignored. The `/renovate-act` command reads the latest JSON from this directory.
+This directory is gitignored. By default, the `renovate-act` skill reads the latest JSON from this directory; a user-provided report path may point elsewhere.
 
 ## Close Comment Templates
 

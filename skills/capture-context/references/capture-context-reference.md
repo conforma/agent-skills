@@ -126,22 +126,22 @@ Fail examples:
 - Sprint-specific workarounds ("temporarily pinned to v0.2 until upstream fixes the bug")
 - Feature flags ("EC_USE_OPA=1 gates the new evaluator" — the flag will be removed)
 
-## Boundary: Design Doc vs AGENTS.md vs CLAUDE.md
+## Boundary: Design Documents vs Repository Instructions
 
 | Knowledge type | Where it goes |
 |---------------|---------------|
-| Build commands, test commands, lint rules | AGENTS.md |
-| Code conventions (naming, formatting, patterns) | AGENTS.md |
-| Review checklist items (effective_on dates, collection membership) | AGENTS.md |
-| Repo structure and file layout | AGENTS.md |
+| Build commands, test commands, lint rules | Repository agent instructions (for example, AGENTS.md) |
+| Code conventions (naming, formatting, patterns) | Repository agent instructions (for example, AGENTS.md) |
+| Review checklist items (effective_on dates, collection membership) | Repository agent instructions (for example, AGENTS.md) |
+| Repo structure and file layout | Repository agent instructions (for example, AGENTS.md) |
 | Why a subsystem is designed the way it is | design doc |
 | Cross-repo operational knowledge | design doc |
 | Security and architectural constraints | design doc |
 | Integration points with external systems | design doc |
-| Workspace-wide repo map and architecture | CLAUDE.md |
-| Tool usage and workflow instructions | CLAUDE.md |
+| Workspace-wide repo map and architecture | Repository instructions loaded by the current harness |
+| Tool usage and workflow instructions | Harness-specific instructions or configuration |
 
-When in doubt: if it tells you HOW to work in the repo, it's AGENTS.md. If it tells you WHY the code is the way it is, it's a design doc.
+When in doubt: if it tells you HOW to work in the repo, it's repository instructions. If it tells you WHY the code is the way it is, it's a design doc.
 
 ## Common Subsystem Categories for Conforma
 

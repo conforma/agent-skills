@@ -1,17 +1,17 @@
 ---
-description: Capture implementation context as a design doc — the hill climbing loop for self-improving agent documentation
-allowed-tools: Read, Write, Bash, Glob, Grep
+name: capture-context
+description: Capture non-obvious implementation context in a subsystem design document after implementation.
 ---
 
 # Capture Context
 
 After implementing a story, extract the non-obvious knowledge you needed and persist it as a design doc in the repo. This is the hill climbing loop — each implementation makes the codebase smarter for the next one.
 
-Read the reference document at `.claude/commands/capture-context-reference.md` before starting. It contains the quality bar examples, filter criteria, and subsystem categories.
+Read [the capture-context reference](references/capture-context-reference.md) before starting. It contains quality-bar examples, filter criteria, and subsystem categories.
 
 ## When to Use
 
-Run this after implementation is complete (acceptance criteria pass, agent-context.json written) and before committing. Skip if the implementation was straightforward and didn't require knowledge beyond what AGENTS.md and the code provide.
+Run this after implementation and its acceptance criteria are verified, before committing. If the task produced an `agent-context.json` sidecar, consult it as an additional source. Skip if implementation was straightforward and required no knowledge beyond the code and existing repository instructions.
 
 **Trigger signals — run this step if any are true:**
 - The user had to answer questions about how something works
@@ -27,7 +27,7 @@ Run this after implementation is complete (acceptance criteria pass, agent-conte
 Review your conversation and implementation process. For each piece of context that was essential to the implementation, ask: **"Was this findable in the codebase before I started?"**
 
 Generate candidates by answering these questions:
-- What did I need to know that wasn't in the code, AGENTS.md, or CLAUDE.md?
+- What did I need to know that wasn't in the code or existing repository instructions, such as AGENTS.md or a harness-specific equivalent?
 - What questions did the user answer that a design doc should have covered?
 - What cross-repo connections did I discover that aren't documented?
 - What conventions or constraints shaped my approach that aren't written down?
@@ -49,7 +49,7 @@ For each candidate, apply these filters. All three must pass:
 | **Stable** | Will this remain true for more than one sprint? | Too transient to persist |
 
 Also check for duplication:
-- Is this already in AGENTS.md or CLAUDE.md? → Skip
+- Is this already documented in existing repository instructions? → Skip
 - Is this already in an existing design doc? → Update that doc instead
 - Is this better suited to AGENTS.md (implementation instructions, conventions, build commands)? → Suggest an AGENTS.md update instead
 
@@ -119,7 +119,7 @@ Read the doc back and check each section against the quality bar:
 | Explains WHY something is the way it is? | Keep | — |
 | Just describes WHAT the code does? | — | Remove |
 | Specific to one story and unlikely to matter again? | — | Remove |
-| Already documented in AGENTS.md or CLAUDE.md? | — | Remove |
+| Already documented in existing repository instructions? | — | Remove |
 | Uses jargon without explanation? | — | Fix or remove |
 
 Also verify:
@@ -142,5 +142,5 @@ The design doc should be committed with the implementation changes — it's part
 - Design docs are organized by subsystem, not by story. Multiple stories may contribute to the same doc over time. A story that touches rule filtering should update `design/rule-filtering.md`, not create a new file.
 - The goal is NOT comprehensive documentation. It's capturing the specific knowledge that was needed and missing. A design doc with 3 focused sections is better than one with 10 vague ones.
 - If the implementation was entirely straightforward (everything was in AGENTS.md and the code), say so and skip the doc. Not every implementation produces design doc content.
-- The agent-context.json sidecar captures line-level reasoning about the diff. The design doc captures subsystem-level operational knowledge. They're complementary, not redundant.
+- If present, an `agent-context.json` sidecar captures line-level reasoning about the diff. The design doc captures subsystem-level operational knowledge. They're complementary, not redundant.
 - Never reference specific Jira stories, PR numbers, or dates in design docs. State the knowledge directly. Stories close, PRs merge, but the knowledge persists.

@@ -1,16 +1,15 @@
 ---
-description: Assess a repository with AgentReady and apply scaffolding fixes to improve its AI-assisted development readiness score
-argument-hint: <repo-path>
-allowed-tools: Read, Write, Edit, Bash, Glob, Grep
+name: scaffold-repo
+description: Assess a repository with AgentReady and suggest or apply user-approved, repository-native changes to improve agent readiness.
 ---
 
 # Scaffold Repository for AgentReady
 
 Assess a repository with AgentReady, triage the results, and apply fixes to improve the score.
 
-## Instructions
+## Input
 
-The repo path is provided in `$ARGUMENTS`. If no argument is provided, prompt the user for the repo path.
+Provide a path to the repository to assess. Ask for the path if it is missing.
 
 Resolve the path to an absolute path and quote it in all shell commands (paths with spaces or special characters will break otherwise). All file operations in subsequent steps should use absolute paths rooted at the repo.
 
@@ -46,7 +45,6 @@ Changes the skill can apply directly. These are safe, mechanical fixes:
 | `gitignore_completeness` | Append missing patterns identified in the assessment evidence |
 | `conventional_commits` | Add `.commitlintrc.yaml` + commitlint hook to `.pre-commit-config.yaml` (create the file if missing) |
 | `issue_pr_templates` | Add `.github/pull_request_template.md` with What/Why/Tickets sections; add issue templates if missing |
-| `deterministic_enforcement` | Add `.claude/settings.json` with a PostToolUse formatting hook for the repo's primary language |
 | `readme_structure` | Add missing sections (Installation/Getting Started) if the assessment evidence says they're absent |
 
 ### Guided
@@ -56,7 +54,8 @@ Changes that need user input or repo-specific knowledge. Do not generate content
 |---|---|
 | `single_file_verification` | Suggest lint + type-check commands based on the detected language; ask the user to confirm the right commands before adding to AGENTS.md |
 | `pattern_references` | Ask the user for 3-5 common change types and their reference files, then add to AGENTS.md |
-| `progressive_disclosure` | Suggest path-scoped `.claude/rules/` files based on the repo's directory structure; confirm with user |
+| `progressive_disclosure` | Suggest updates to repository instructions or ask which harness-specific convention the team uses; confirm before editing |
+| `deterministic_enforcement` | Inspect existing formatter, lint, and CI commands. Propose a repository-native mechanism and ask before changing configuration. Do not create a harness-specific hook by default. |
 | `design_intent` | Explain what's needed (preconditions, invariants, rationale docs); suggest creating a Jira story rather than generating content |
 | `threat_model` | Explain the 8-section schema; suggest creating a Jira story |
 | `architecture_decisions` | Explain what ADRs are and when they're worth creating; suggest bundling with design_intent story |
@@ -70,7 +69,7 @@ Ask the user which categories to proceed with.
 
 For each auto-fixable attribute the user approved, apply the fix. Explain each change as you make it.
 
-**Idempotency rule:** Before writing any file, check if it already exists. If it does, read it and merge rather than overwrite — do not duplicate entries in `.gitignore`, do not add a second `repos:` key to `.pre-commit-config.yaml`, do not clobber existing `.claude/settings.json` hooks or permissions. If a file already contains the target content, skip it.
+**Idempotency rule:** Before writing any file, check if it already exists. If it does, read it and merge rather than overwrite. Do not duplicate entries in `.gitignore`, add a second `repos:` key to `.pre-commit-config.yaml`, or clobber existing hooks or permissions. If a file already contains the target content, skip it.
 
 ### gitignore_completeness
 Read the assessment evidence to find which patterns are missing. Check the existing `.gitignore` and only append patterns that are not already covered (including by glob patterns). Group by category (build artifacts, editor files, OS files).
@@ -107,15 +106,6 @@ Add `.github/pull_request_template.md`:
 ```
 
 If no issue templates exist (check `.github/ISSUE_TEMPLATE/`), add a bug report template, feature request template, and config.yaml with `blank_issues_enabled: true`.
-
-### deterministic_enforcement
-Create `.claude/settings.json` with a PostToolUse hook appropriate to the detected language:
-
-- **Go**: run `gofmt` on edited `.go` files
-- **Python**: run `black` or `ruff format` on edited `.py` files
-- **Rego**: run `make fmt` on edited `.rego` files
-- **JavaScript/TypeScript**: run `prettier` on edited files
-- **Other**: ask the user what formatter to use
 
 ### readme_structure
 Read the assessment evidence to identify missing sections. Add only the sections the assessor flagged as missing. Keep additions minimal — a heading, a sentence or two, and a command. Do not rewrite the README.

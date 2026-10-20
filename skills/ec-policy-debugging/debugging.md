@@ -6,12 +6,12 @@ Guide for debugging Enterprise Contract policy violations by examining policy ru
 
 Before debugging, set up your environment:
 
-1. **From a Conforma log**: Follow `debugging_setup.md` to extract `policy.yaml`, `key.pub`, and `run.sh`
-2. **Pull policy source code**: If policy sources are OCI references, pull them (see `debugging_setup.md` Step 6)
+1. **From a Conforma log**: Follow the [ec-setup skill](../ec-setup/SKILL.md) to extract `policy.yaml`, `key.pub`, and `run.sh`.
+2. **Pull policy source code**: If policy sources are OCI references, follow the policy-pull step in the [ec-setup skill](../ec-setup/SKILL.md).
 
 ## Quick Start
 
-When you encounter a violation:
+When you encounter a violation, first identify the failure evidence. Resolve any bundled helper paths relative to the linked skill file, not the current working directory.
 
 1. **Get the violation code** from the log (e.g., `olm.unmapped_references`)
 2. **Find the rule** in the policy source
@@ -55,7 +55,7 @@ conftest pull --policy ./policies oci::quay.io/enterprise-contract/ec-release-po
 └── lib/               # Shared libraries
 ```
 
-See `debugging_setup.md` Step 6 for details.
+See the policy-pull step in the [ec-setup skill](../ec-setup/SKILL.md) for details.
 
 ## Finding a Rule from Violation Code
 
@@ -162,8 +162,9 @@ crane export <BUNDLE_IMAGE> - | tar -xOf - manifests/*.clusterserviceversion.yam
 ## Parsing Validation Output
 
 ### Summarize violations from log
+Resolve `summarize_violations.py` relative to the parent `SKILL.md`, then run it with the log path:
 ```bash
-./summarize_violations.py <LOG_FILE>
+python3 "<resolved path to summarize_violations.py>" "<LOG_FILE>"
 ```
 
 ### Quick violation count by code
@@ -174,8 +175,9 @@ grep -oE '"code":\s*"[^"]+"' <LOG_FILE> | sort | uniq -c | sort -rn
 ## Debugging Workflow
 
 ### 1. Identify the violation
+Run the helper resolved relative to the parent `SKILL.md`:
 ```bash
-./summarize_violations.py <LOG_FILE>
+python3 "<resolved path to summarize_violations.py>" "<LOG_FILE>"
 # Note the violation code, e.g., "rpm_packages.unique_version"
 ```
 
@@ -215,7 +217,7 @@ cosign download attestation <IMAGE_REF> | jq -r .payload | base64 -d > attestati
 
 ## Reproducing Locally
 
-Use `debugging_setup.md` to extract config from a log, then:
+Use the [ec-setup skill](../ec-setup/SKILL.md) to extract configuration from a log, then:
 ```bash
 ./run.sh
 ```

@@ -1,6 +1,6 @@
 ---
-description: Add a structured [MID-SPRINT-ADD] comment to a Jira issue and optionally move it into the active sprint
-argument-hint: <ISSUE-KEY> [reason]
+name: mid-sprint-add
+description: Record a Jira issue as a mid-sprint addition with a tagged reason and, when needed, add it to the active sprint.
 ---
 
 # Mid-Sprint Add
@@ -9,22 +9,19 @@ Tag a Jira issue as a mid-sprint addition with a structured comment and optional
 
 ## Prerequisites
 
-This command requires access to Jira via an MCP server (e.g. mcp-atlassian, plugin:atlassian:atlassian, or similar). If no Jira MCP tools are available, stop and tell the user:
+This skill requires access to Jira through an MCP server (for example, mcp-atlassian) or an equivalent configured integration. If no Jira MCP tools are available, stop and tell the user:
 
-> This command requires a Jira MCP server to be configured.
-> See https://github.com/mcp-atlassian/mcp-atlassian for setup instructions,
-> or install the Atlassian plugin via `/install-plugin atlassian`.
+> This skill requires a Jira MCP server to be configured in the active harness.
+> Configure the Jira MCP integration using your harness's setup instructions.
 >
 > You can manually add this comment to the Jira issue:
 > ```text
 > [MID-SPRINT-ADD] reason: <your reason here>
 > ```
 
-## Instructions
+## Inputs
 
-Parse `$ARGUMENTS` for:
-- **Issue key** (required): The Jira issue key, e.g. `EC-1234`
-- **Reason** (optional): Everything after the issue key is the reason. If not provided, ask the user.
+Identify the Jira issue key (for example, `EC-1234`) and optional reason from the user's request. Treat text after the key as the reason. Ask for a missing issue key or reason.
 
 ## Step 1: Look Up the Active Sprint
 
@@ -44,7 +41,7 @@ If valid, note:
 
 ## Step 3: Get the Reason
 
-If a reason was provided in `$ARGUMENTS`, use it. Otherwise, ask the user.
+If the user provided a reason, use it. Otherwise, ask for one.
 
 The reason must be a single line — strip or reject any newlines/carriage returns. If the user provides a multiline reason, collapse it to one line.
 
