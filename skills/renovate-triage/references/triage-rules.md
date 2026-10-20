@@ -24,7 +24,7 @@ Each PR is classified into exactly one category. Categories are evaluated in pri
 
 **Action:** Close with comment.
 
-**How to detect:** Parse the shared Renovate config from `conforma/.github/config/renovate/renovate.json` and extract `baseBranchPatterns`. Current patterns target `main` and `release-v0.7+`. Compare each PR's `baseRefName` against these patterns. A PR targeting `release-v0.5` or `release-v0.6` is on an abandoned branch.
+**How to detect:** Parse the shared Renovate config from `conforma/.github/config/renovate/renovate.json` and extract `baseBranchPatterns`. Current patterns target `main` and `release-v0.7+`. Compare each PR's extracted `base_branch` against these patterns unless it is `"unknown"`, in which case skip the pattern comparison. The independent title suffix signal still applies. A PR targeting `release-v0.5` or `release-v0.6` is on an abandoned branch.
 
 **Fetch the config:**
 ```bash

@@ -110,6 +110,14 @@ def test_skill_catalog_and_local_links():
     assert ".claude/reports/" in renovate_act
     assert "same basename" in renovate_act
     assert ".conforma/reports/" in sprint_report
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "skills/ec-policy-debugging /path/to/agent-skills/skills/ec-setup" in readme
+    assert "If `--report <path>` was provided" in renovate_act
+    assert "Find the generated table row matching both the repository and PR number" in renovate_act
+    triage_rules = (SKILLS / "renovate-triage" / "references" / "triage-rules.md").read_text(encoding="utf-8")
+    assert 'Compare each PR\'s extracted `base_branch`' in triage_rules
+    assert "skip comparing it with `baseBranchPatterns`" in renovate_triage
+    assert 'The independent title suffix signal still applies' in triage_rules
 
 
 def test_helper_runs_from_a_relocated_collection_and_other_working_directory():

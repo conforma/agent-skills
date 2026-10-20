@@ -17,17 +17,17 @@ Recognize these optional inputs in the user's request:
 
 ## Step 1: Load the Triage Report
 
-Find and load the report JSON:
+If `--report <path>` was provided, read that exact JSON file. Resolve a relative path from the current project directory. If the path is missing or unreadable, report the selected path and stop; do not fall back to another report.
+
+If `--report` was not provided, find the latest JSON report in `.conforma/reports/`:
 
 ```bash
-# Find the latest report, or use --report path
 ls -t .conforma/reports/renovate-triage-*.json 2>/dev/null | head -1
 ```
 
-If no report is found, tell the user:
-> No Renovate triage report exists in `.conforma/reports/`. Ask the user to run the `renovate-triage` skill first.
+If no default report is found, tell the user that no Renovate triage report exists in `.conforma/reports/` and ask them to run the `renovate-triage` skill first.
 
-Read the JSON file into memory.
+Read the selected JSON file into memory.
 
 ## Trust Boundary
 
@@ -193,14 +193,14 @@ Write the updated JSON back to the same file.
 
 ### Update Markdown
 
-Read the Markdown report with the same basename as the selected JSON file and the `.md` extension in the JSON file's directory. This also applies when `--report` selects an existing legacy report. Find the checkbox line for this PR (match by PR number and repo). Append the outcome:
+Read the Markdown report with the same basename as the selected JSON file and the `.md` extension in the JSON file's directory. This also applies when `--report` selects an existing legacy report. Find the generated table row matching both the repository and PR number, then append the outcome to that row's Action cell:
 - `✅ Auto-merge enabled (pending CI)`
 - `❌ Closed`
 - `⏭️ Skipped ({reason})`
 - `💥 Failed ({error})`
 - `👀 Dry run`
 
-Write the updated markdown back to the same file.
+Preserve the other table cells. If no row matches, report that the JSON was updated but the Markdown report was not; do not create a duplicate row.
 
 ## Step 6: Final Summary
 

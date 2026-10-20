@@ -24,7 +24,7 @@ When installing a subset, include linked resources and skills: `ec-debug-violati
 
 These examples describe client installation, not alternate skill implementations:
 
-- **Codex** ([skills documentation](https://developers.openai.com/codex/skills)): its documented project skill directory is `.agents/skills/`. Create it if needed, then copy a complete skill directory there, for example `mkdir -p /path/to/project/.agents/skills && cp -R /path/to/agent-skills/skills/ec-policy-debugging /path/to/project/.agents/skills/`.
+- **Codex** ([skills documentation](https://developers.openai.com/codex/skills)): its documented project skill directory is `.agents/skills/`. Create it if needed, then copy the linked skill directories there, for example `mkdir -p /path/to/project/.agents/skills && cp -R /path/to/agent-skills/skills/ec-policy-debugging /path/to/agent-skills/skills/ec-setup /path/to/project/.agents/skills/`.
 - **Pi:** load a specific skill with `pi --skill /path/to/agent-skills/skills/ec-policy-debugging/SKILL.md`.
 - **Claude Code:** copy complete skill directories to the project or user skill location supported by your installed version. The former repository layout used `.claude/skills/`; that client directory is no longer the source layout here.
 
