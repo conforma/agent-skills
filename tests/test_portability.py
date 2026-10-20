@@ -118,6 +118,9 @@ def test_skill_catalog_and_local_links():
     assert 'Compare each PR\'s extracted `base_branch`' in triage_rules
     assert "skip comparing it with `baseBranchPatterns`" in renovate_triage
     assert 'The independent title suffix signal still applies' in triage_rules
+    assert 'skip superseded detection for that PR' in triage_rules
+    assert 'Exclude PRs with `base_branch == "unknown"` before grouping' in triage_rules
+    assert 'Exclude PRs with `base_branch == "unknown"` before grouping' in renovate_triage
 
 
 def test_helper_runs_from_a_relocated_collection_and_other_working_directory():

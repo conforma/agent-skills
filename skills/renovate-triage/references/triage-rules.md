@@ -45,6 +45,9 @@ The Renovate config is a strong heuristic, not gospel truth. Always explain the 
 **Action:** Close the older PR with comment referencing the newer one.
 
 **Detection rules:**
+
+If a PR's `base_branch` is `"unknown"`, skip superseded detection for that PR. It must not be grouped with other PRs whose branches are also unknown.
+
 1. Match on `(repo, base_branch, dependency_group)`:
    - Extract the dependency group from the **PR title** (preferred) or Renovate head branch name if available
    - From titles: "Update go modules ..." → `go-modules`, "Update module github.com/go-git/go-billy/v5 ..." → `go-billy`, "Update GitHub Actions ..." → `github-actions`
@@ -149,7 +152,7 @@ PRs on the same `(repo, base_branch)` that update the same dependency ecosystem 
 - `konflux`: PRs updating Konflux references or RPM lockfiles
 - `other`: Everything else
 
-**Detection:** Group PRs by `(repo, base_branch, ecosystem)`. Groups with 2+ PRs are cascade groups.
+**Detection:** Exclude PRs with `base_branch == "unknown"` before grouping; do not combine them into a shared unknown-branch group. Group the remaining PRs by `(repo, base_branch, ecosystem)`. Groups with 2+ PRs are cascade groups.
 
 **Recommended merge order within a cascade:** Security updates first, then patches, then minor, then major. Within the same update type, smaller PRs first.
 

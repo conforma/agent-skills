@@ -104,7 +104,7 @@ Apply the [Renovate triage rules](references/triage-rules.md). Process each PR t
 For each PR, evaluate in this order:
 
 1. **Abandoned branch**: If `base_branch` is not `"unknown"`, does it match an active `baseBranchPattern`? Independently, does the title end with `- abandoned`?
-2. **Superseded**: Is there another open PR in the results with the same `(repo, base_branch, dependency_group)` targeting a higher version? (See "Extracting dependency group" below.)
+2. **Superseded**: If `base_branch` is not `"unknown"`, is there another open PR in the results with the same `(repo, base_branch, dependency_group)` targeting a higher version? (See "Extracting dependency group" below.)
 3. **Security**: Does the title contain `[SECURITY]` or `[security]` (case-insensitive)? Does it have a `security` label?
 4. **Go version bump**: Does the title match Go version patterns (see the Renovate triage rules, Priority 4)?
 5. **Major**: Does the title start with `🚨` or contain `(major)`? Does it have a `major` label?
@@ -174,7 +174,7 @@ If a repo has custom `baseBranchPatterns`, note this in the report. It may affec
 
 ## Step 8: Detect Cascade Groups
 
-Group all PRs by `(repo, base_branch)`. Within each group, assign an ecosystem label based on the PR title and categorization:
+Exclude PRs with `base_branch == "unknown"` before grouping; do not combine them into a shared unknown-branch group. Group the remaining PRs by `(repo, base_branch)`. Within each group, assign an ecosystem label based on the PR title and categorization:
 - Titles with "go modules", "module github.com/" → `go-modules`
 - Go version bump category → `go-version`
 - Titles with "GitHub Actions", action names → `github-actions`
