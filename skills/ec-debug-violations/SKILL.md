@@ -128,13 +128,11 @@ Use `<setup-directory>/policy/` directly. The [ec-setup skill](../ec-setup/SKILL
 
 ### Otherwise, search in this order:
 
-1. **Check for existing setup directories** created by the `ec-setup` skill:
-   ```bash
-   ls -d */ | grep -E '^[a-z]+-.*-[a-z0-9]+-[a-z0-9]+/$'
-   ```
-   The `ec-setup` skill creates directories named `<policy-name>-<image-name>-<arch>/` containing a `policy/` subdirectory with the pulled OCI bundles.
+1. **Discover complete `ec-setup` output directories by their contents**, not their names. Inspect immediate child directories of the current project/task directory. A candidate must contain `snapshot.json`, `policy.yaml`, and `policy/release/` from the pulled OCI bundle.
 
-   If multiple setup directories exist, list them and ask the user which one to use, or use the most recently modified one.
+   - If exactly one candidate exists, use it as `<setup-directory>` and its `policy/` subdirectory as the policy base.
+   - If several candidates exist, list the paths and ask the user which one to use.
+   - If none exists, continue to the local policy check. The user can provide `--setup-dir <directory>` explicitly or provide `--policy <policy.yaml>`.
 
 2. **Local policy directory**: Check for `policy/release/` in the current directory (for local development or from conftest pull)
 

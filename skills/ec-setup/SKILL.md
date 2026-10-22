@@ -132,4 +132,6 @@ After setup is complete, inform the user:
 - The output directory location
 - The number of components in the snapshot
 - How to run validation: `./run.sh`
-- How to debug violations: Use the ec-policy-debugging skill or ask about specific violations
+- How to debug violations: Use the `ec-debug-violations` skill or ask about specific violations
+
+When the output contains `snapshot.json`, `policy.yaml`, and `policy/release/`, `ec-debug-violations` can discover it automatically when run from the same project/task directory. If several candidates exist or you run it elsewhere, provide this output path with `--setup-dir`. Use `--policy` to supply a policy configuration directly.

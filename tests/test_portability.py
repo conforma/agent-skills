@@ -82,6 +82,13 @@ def test_skill_catalog_and_local_links():
     assert {"active-release-branches.sh", "assess.sh"} <= {
         path.name for path in vuln_scripts.iterdir()
     }
+    debug_skill = (SKILLS / "ec-debug-violations" / "SKILL.md").read_text(encoding="utf-8")
+    setup_skill = (SKILLS / "ec-setup" / "SKILL.md").read_text(encoding="utf-8")
+    assert all(marker in debug_skill for marker in ("snapshot.json", "policy.yaml", "policy/release/"))
+    assert "by their contents" in debug_skill
+    assert "<policy-name>-<image-name>-<arch>" not in debug_skill
+    assert "can discover it automatically" in setup_skill
+    assert "--setup-dir" in debug_skill and "--policy" in debug_skill
     missing_links = markdown_links_exist(ROOT)
     assert not missing_links, missing_links
     instructions = "\n".join(
