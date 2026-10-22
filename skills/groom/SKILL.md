@@ -1,6 +1,6 @@
 ---
-description: Assess one Jira story for implementation readiness and propose an Automated Grooming Review
-argument-hint: <ISSUE-KEY> [--force]
+name: groom
+description: Assess one Jira story for implementation readiness and prepare an explicitly confirmed review and label update.
 ---
 
 # Groom Story
@@ -9,7 +9,7 @@ Assess one Jira story for implementation readiness, let the user review the
 assessment, and—with explicit confirmation—post it to Jira and apply a
 readiness label.
 
-Read `.claude/references/sprint-triage-reference.md` before assessing the story.
+Read the [sprint-triage reference](../sprint-triage/references/sprint-triage-reference.md) before assessing the story.
 Use its information-availability framework, ambiguity words, scope signals,
 and dependency heuristics. Adapt those signals into actionable suggestions for
 one story rather than producing a sprint triage report.
@@ -30,20 +30,14 @@ Before starting, confirm that all three operations are available. If any are
 missing, stop and name the missing capability. Do not mutate Jira or fall back
 to an unrelated CLI.
 
-## Arguments
+## Inputs
 
-Parse `$ARGUMENTS` as:
-
-- exactly one Jira issue key, such as `EC-1234`; and
-- an optional `--force` flag, before or after the issue key.
-
-Reject missing keys, malformed keys, unknown flags, or multiple issue keys and
-show the expected usage: `/groom EC-1234 [--force]`.
+Identify exactly one Jira issue key, such as `EC-1234`, and an optional `--force` flag in the user's request. The flag may appear before or after the key. Ask for a missing issue key; reject malformed keys, unknown flags, or multiple issue keys and state the expected input: `EC-1234 [--force]`.
 
 ## Step 1: Fetch and display the story
 
 Fetch the complete issue. If it is inaccessible or does not exist, report the
-error and stop. If its issue type is not Story, explain that `/groom` supports
+error and stop. If its issue type is not Story, explain that this skill supports
 Jira stories and stop.
 
 Use a dedicated acceptance-criteria field when one is returned. Otherwise,
@@ -76,7 +70,7 @@ brackets because Jira may strip them.
 
 If a match exists and `--force` was not supplied, report that the story has
 already been assessed and stop without reassessing, commenting, or changing
-labels. Tell the user that `/groom <KEY> --force` performs an explicit
+labels. Tell the user that providing `--force` requests an explicit
 reassessment.
 
 If `--force` was supplied, continue and create a new review based on the

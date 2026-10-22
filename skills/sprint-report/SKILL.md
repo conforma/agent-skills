@@ -1,6 +1,6 @@
 ---
-description: Generate a report of mid-sprint story additions for the current active or most recently completed sprint, optionally post to Slack
-argument-hint: [--post [#channel ...]] [--sprint <name>]
+name: sprint-report
+description: Report Jira issues added to a Conforma sprint after it started, with optional Slack posting.
 ---
 
 # Sprint Report — Mid-Sprint Additions
@@ -9,13 +9,13 @@ Query all issues in a sprint, detect which were added after the sprint started (
 
 ## Prerequisites
 
-This command requires access to Jira via an MCP server (e.g. mcp-atlassian, plugin:atlassian:atlassian, or similar). The `--post` flag additionally requires a Slack MCP server.
+This skill requires access to Jira through an MCP server (for example, mcp-atlassian) or an equivalent configured integration. The `--post` option additionally requires a Slack MCP server.
 
 If no Jira MCP tools are available, stop and tell the user:
 
-> This command requires a Jira MCP server to be configured.
-> See https://github.com/mcp-atlassian/mcp-atlassian for setup instructions,
-> or install the Atlassian plugin via `/install-plugin atlassian`.
+> This skill requires a Jira MCP server to be configured in the active harness.
+> See https://github.com/mcp-atlassian/mcp-atlassian for setup instructions or
+> use the setup instructions for your harness.
 >
 > To manually find tagged mid-sprint additions, search Jira with:
 > ```text
@@ -24,11 +24,11 @@ If no Jira MCP tools are available, stop and tell the user:
 > Note: this only finds explicitly tagged issues. The automated report also uses
 > changelog analysis to detect all issues added after the sprint started.
 
-## Instructions
+## Inputs
 
-Parse `$ARGUMENTS` for optional flags:
-- `--post [#channel ...]` — Post the report to Slack. Defaults to `#team-conforma` if no channels specified. Can list one or more channels (e.g. `--post #team-conforma #conforma-leads`).
-- `--sprint <name>` — Target a specific sprint by name (e.g. `--sprint "Conforma 26-09"`) instead of the current active sprint. Partial matches are fine (e.g. `--sprint 26-09`).
+Identify these optional inputs in the user's request:
+- `--post [#channel ...]` — Post the report to Slack. Defaults to `#team-conforma` if no channels are specified. Can list one or more channels (for example, `--post #team-conforma #conforma-leads`).
+- `--sprint <name>` — Target a sprint by name (for example, `--sprint "Conforma 26-09"`) instead of the current active sprint. Partial matches are accepted (for example, `--sprint 26-09`).
 
 ## Step 1: Identify the Sprint
 
@@ -180,10 +180,10 @@ All {n} issues in this sprint were present at sprint start ({start_date}).
 
 Slugify the sprint name for the filename: lowercase, replace spaces and special characters with hyphens, collapse multiple hyphens. For example, `Conforma 26-10` becomes `conforma-26-10`.
 
-Write the report to `.claude/reports/sprint-report-{slugified-name}.md`.
+Write the report to `.conforma/reports/sprint-report-{slugified-name}.md` under the current project directory.
 
 ```bash
-mkdir -p .claude/reports
+mkdir -p .conforma/reports
 ```
 
 ## Step 7: Post to Slack (if --post)
@@ -201,7 +201,7 @@ If `--post` was specified but no Slack MCP is available, tell the user:
 > No Slack MCP server is configured. Report saved locally — copy and paste it into the appropriate channel manually.
 
 If `--post` was not specified, remind the user:
-> Run `/sprint-report --post` to share this report in #team-conforma.
+> Request `--post` the next time you run this skill to share the report in #team-conforma.
 
 ## Step 8: Present Summary
 
@@ -211,6 +211,6 @@ Sprint report generated:
 - Total issues: {n}
 - Mid-sprint additions: {n} ({percentage}%)
 - Unplanned points: {n}
-- Report saved to: .claude/reports/sprint-report-{slugified-name}.md
+- Report saved to: .conforma/reports/sprint-report-{slugified-name}.md
 {- Posted to: #channel1, #channel2 (if --post)}
 ```

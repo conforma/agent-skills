@@ -1,185 +1,74 @@
-# Claude EC Skills
+# Conforma Agent Skills
 
-Claude Code skills and commands for [Conforma](https://github.com/conforma/cli) policy debugging, vulnerability patching, and sprint management.
+Reusable, Markdown-based agent instructions for Conforma policy work, Jira sprint workflows, vulnerability patching, and repository maintenance. The skill content does not depend on a particular model or agent harness. Harness-specific discovery, invocation, permissions, and MCP configuration remain the responsibility of the client.
 
-## Overview
+## Use the skills
 
-These tools help you:
-
-- Debug and resolve Conforma/EC validation failures
-- Assess Jira stories for implementation readiness before backlog grooming
-- Track mid-sprint story additions with structured tagging
-- Generate sprint reports surfacing unplanned work
-- Prepare verified Conforma CLI vulnerability patches for UBI RPMs and Go modules
-
-## Installation
-
-Copy the `.claude` directory to your project or home directory:
+Clone the collection:
 
 ```bash
-# Clone this repo
-git clone https://github.com/conforma/claude-skills.git
-
-# Copy to your project
-cp -r claude-skills/.claude /path/to/your/project/
-
-# Or copy to home directory for global access
-cp -r claude-skills/.claude ~/
+git clone https://github.com/conforma/agent-skills.git
 ```
 
-## Commands
+Preserve the complete `skills/` tree, including each skill's references, templates, examples, scripts, and helper files. Install it in a directory supported by your agent harness. There is no single discovery path shared by all harnesses.
 
-### `/groom`
+If your harness does not discover Agent Skills, give any tool-capable agent the path to the relevant `SKILL.md` and ask it to read and follow the instructions. For example:
 
-Assess one Jira story for implementation readiness and preview a structured
-Automated Grooming Review before posting it and applying a readiness label.
+> Read `/path/to/agent-skills/skills/ec-policy-debugging/SKILL.md` and use it to investigate `validation.log`.
 
-```bash
-/groom EC-1234
-/groom EC-1234 --force  # Explicitly reassess a previously reviewed story
-```
+The collection follows the `SKILL.md` name/description convention. Some clients discover skills automatically; others require a client-specific install location or an explicit file path. Check the active harness documentation for discovery and invocation behavior. Resource links are relative to each skill file, not the current working directory.
 
-The command evaluates clarity, testability, information completeness,
-dependencies, and scope. It requires Jira MCP capabilities for reading issues
-and comments, posting comments, and updating labels.
+When installing a subset, include linked resources and skills: `ec-debug-violations` uses `ec-policy-debugging` and `ec-setup`; `ec-policy-debugging` links to `ec-setup`; `groom` uses the sprint-triage reference; and `renovate-act` uses the Renovate triage rules reference. Copy the entire `vuln-patcher` directory, including its `scripts/` folder.
 
-### `/ec-setup`
+### Client-specific examples
 
-Set up a local debugging environment from a Conforma validation log.
+These examples describe client installation, not alternate skill implementations:
 
-```bash
-/ec-setup logs/validation.log
-```
+- **Codex** ([skills documentation](https://developers.openai.com/codex/skills)): its documented project skill directory is `.agents/skills/`. Create it if needed, then copy the linked skill directories there, for example `mkdir -p /path/to/project/.agents/skills && cp -R /path/to/agent-skills/skills/ec-policy-debugging /path/to/agent-skills/skills/ec-setup /path/to/project/.agents/skills/`.
+- **Pi:** load a specific skill with `pi --skill /path/to/agent-skills/skills/ec-policy-debugging/SKILL.md`.
+- **Claude Code:** copy complete skill directories to the project or user skill location supported by your installed version. The former repository layout used `.claude/skills/`; that client directory is no longer the source layout here.
 
-This command:
-1. Extracts the policy configuration from the log
-2. Saves the public key for signature verification
-3. Pulls the policy OCI bundle
-4. Generates a `run.sh` script to reproduce the validation locally
-
-### `/ec-debug-violations`
-
-Parse a log file and debug all policy violations.
-
-```bash
-/ec-debug-violations logs/validation.log
-```
-
-This command:
-1. Extracts all unique violation codes from the log
-2. Looks up each rule's metadata (title, description, solution)
-3. Analyzes affected components and error messages
-4. Provides root cause analysis and recommended actions
-5. Generates a prioritized summary
-
-### `/mid-sprint-add`
-
-Tag a Jira issue as a mid-sprint addition with a structured comment.
-
-```bash
-/mid-sprint-add EC-1234 customer escalation from KFLUXSPRT-7872
-```
-
-This command:
-1. Looks up the current active sprint for the Conforma team
-2. Adds a `[MID-SPRINT-ADD] reason: ...` comment to the issue
-3. Moves the issue into the active sprint if not already there
-
-### `/sprint-report`
-
-Generate a report of all mid-sprint story additions.
-
-```bash
-/sprint-report          # Current/most recent sprint
-/sprint-report --post   # Generate and post to #team-conforma
-```
-
-This command:
-1. Queries all issues in the sprint
-2. Detects mid-sprint additions via JQL (newly created issues) and changelog analysis (pre-existing issues moved in)
-3. Enriches with `[MID-SPRINT-ADD]` comment reasons when available
-4. Generates a report: which stories were added, by whom, when, and why
-5. Optionally posts to the team Slack channel
+Client conventions change. Confirm native discovery paths and command syntax in current client documentation. A skill can also be invoked by file path where the harness permits local file access.
 
 ## Skills
 
-### `ec-policy-debugging`
+| Skill | Purpose | Additional requirements |
+|---|---|---|
+| [`capture-context`](skills/capture-context/SKILL.md) | Record reusable subsystem knowledge after implementation. | Repository file access |
+| [`ec-debug-violations`](skills/ec-debug-violations/SKILL.md) | Analyze Conforma validation logs and investigate violations. | Python 3; `kubectl` for TaskRun logs; policy access tools as needed |
+| [`ec-policy-debugging`](skills/ec-policy-debugging/SKILL.md) | Understand a policy rule by inspecting its source, metadata, tests, and input data. | Python 3 for the bundled log summarizer; `pytest` to run its tests |
+| [`ec-setup`](skills/ec-setup/SKILL.md) | Prepare a local reproduction from a Conforma validation log. | Conforma CLI and `conftest`; registry access for OCI policy sources |
+| [`generate-policy`](skills/generate-policy/SKILL.md) | Create and verify Conforma policy rules, configuration, and tests. | Conforma CLI and OPA; image/key/registry access when validating an image |
+| [`groom`](skills/groom/SKILL.md) | Assess one Jira story and, after confirmation, post a review and readiness label. | Jira MCP capabilities for reading, commenting, and updating labels |
+| [`mid-sprint-add`](skills/mid-sprint-add/SKILL.md) | Record a mid-sprint addition and optionally move the issue into the sprint. | Jira MCP capabilities |
+| [`renovate-act`](skills/renovate-act/SKILL.md) | Revalidate and carry out user-approved Renovate triage actions. | Authenticated GitHub CLI (`gh`) |
+| [`renovate-triage`](skills/renovate-triage/SKILL.md) | Categorize automated dependency-update pull requests and produce a report. | Authenticated GitHub CLI (`gh`); `skopeo` is optional |
+| [`scaffold-repo`](skills/scaffold-repo/SKILL.md) | Assess a repository with AgentReady and guide approved improvements. | AgentReady CLI |
+| [`sprint-report`](skills/sprint-report/SKILL.md) | Report mid-sprint additions, with optional Slack posting. | Jira MCP; Slack MCP for posting |
+| [`sprint-triage`](skills/sprint-triage/SKILL.md) | Assess Jira stories in the current sprint for implementation readiness. | Existing MCP tools `mcp__work-assistant__jira_sprint_issues` and `mcp__work-assistant__jira_get_issue` |
+| [`vuln-patcher`](skills/vuln-patcher/SKILL.md) | Classify Conforma vulnerability tickets and prepare verified UBI RPM or Go-module patches. | Jira read access; verified Conforma CLI checkout; tools and registry access depend on remediation class. Stops before push or PR creation pending approval. |
+| [`write-rule`](skills/write-rule/SKILL.md) | Write a Rego policy rule and tests from a requirements file. | OPA and Conforma policy references |
 
-Core skill for investigating individual policy violations. Automatically invoked when asking about EC violations.
+The skills specify their inputs, outputs, and required operations. They do not grant tool access. Configure MCP servers, credentials, command execution, file access, and user approvals in the active harness. Jira and Slack MCP tool names and calls are retained as documented in the skills.
 
-**Example prompts:**
-- "Why did `olm.unmapped_references` fail?"
-- "What does the `rpm_packages.unique_version` rule check?"
-- "Debug this EC validation error: [paste error]"
+## Generated reports
 
-### `vuln-patcher`
+The Renovate and sprint-report skills write reports under `.conforma/reports/` in the current project. Renovate's `--report <path>` option can still read and update an existing report at another path, including `.claude/reports/`; the skills do not move or delete old reports automatically.
 
-Prepare verified UBI RPM or Go-module patches for Conforma CLI vulnerability tickets. It uses Jira read access and a validated CLI checkout. If no checkout is available, it asks whether to use a supplied path or clone the user's personal fork. It stops before pushing or opening a PR until approved.
+## Migration from `conforma/claude-skills`
 
-The skill follows the Agent Skills format. Other compatible harnesses may need their skill loader pointed at `.claude/skills`.
+The canonical repository is now `conforma/agent-skills`. Replace the old clone and install the complete directories from `skills/` into your harness's skill location. Do not copy the old `.claude/` tree from a prior checkout. If you have local reports under `.claude/reports/`, keep them and pass their JSON path to `renovate-act --report <path>` when needed.
 
-**Example prompts:**
-- "Assess EC-1234 as a Conforma vulnerability and prepare a patch."
-- "Check RHSA 172528 against current Conforma releases."
+The old slash-command entry points are now named skills. Provide their existing inputs in your request or use the invocation syntax supported by your harness. Their domain workflow and confirmation steps remain in each `SKILL.md`.
 
-## File Structure
+## Contributing
 
-```text
-.claude/
-├── commands/
-│   ├── ec-setup.md              # /ec-setup command
-│   ├── ec-debug-violations.md   # /ec-debug-violations command
-│   ├── groom.md                 # /groom command
-│   ├── mid-sprint-add.md        # /mid-sprint-add command
-│   └── sprint-report.md         # /sprint-report command
-├── references/
-│   └── sprint-triage-reference.md # Shared readiness-assessment heuristics
-├── reports/                     # Generated sprint reports
-├── skills/
-│   ├── ec-policy-debugging/
-│   │   ├── SKILL.md             # Skill definition
-│   │   ├── debugging.md         # Full debugging reference
-│   │   └── summarize_violations.py  # Log parsing utility
-│   └── vuln-patcher/
-│       ├── SKILL.md
-│       └── scripts/
-│           ├── active-release-branches.sh
-│           └── assess.sh
-└── settings.local.json          # Claude Code settings
-```
-
-## Requirements
-
-- [Claude Code](https://claude.ai/claude-code) CLI
-- [ec-cli](https://github.com/conforma/cli) (for local validation)
-- [conftest](https://www.conftest.dev/) (for pulling policy bundles)
-- [cosign](https://github.com/sigstore/cosign) (for downloading attestations)
-- [crane](https://github.com/google/go-containerregistry/tree/main/cmd/crane) (for inspecting images)
-
-## Example Workflow
-
-1. **Get a validation log** from a failed Konflux/Conforma pipeline
-
-2. **Set up debugging environment:**
-   ```bash
-   /ec-setup logs/my-validation.log
-   ```
-
-3. **Debug all violations:**
-   ```bash
-   /ec-debug-violations logs/my-validation.log
-   ```
-
-4. **Investigate specific violations:**
-   ```text
-   "Why is olm.unmapped_references failing for the operator bundle?"
-   ```
-
-5. **Run validation locally** (after setup):
-   ```bash
-   cd release-policies-myimage-amd64/
-   ./run.sh
-   ```
+- Put reusable instructions in `skills/<name>/SKILL.md`; keep names lowercase and hyphenated, with a clear description.
+- Keep references, examples, templates, and scripts beside the skill that uses them. Link resources relatively to `SKILL.md` and do not rely on the caller's working directory.
+- State inputs, prerequisites, outputs, missing-input behavior, and failure paths.
+- Do not require model-specific features, client tool names, or harness settings in shared skill content. Keep client installation examples optional and outside the workflow instructions.
+- Preserve approval gates, trust boundaries, and MCP tool identifiers/calls when updating service workflows.
+- Run the local checks described in the pull request workflow before submitting changes.
 
 ## License
 

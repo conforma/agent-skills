@@ -1,10 +1,4 @@
----
-name: renovate-triage
-description: Triage and manage automated dependency update PRs (Renovate, Konflux) across the conforma and enterprise-contract GitHub orgs. Use when discussing Renovate PR backlog, dependency update management, or automated PR triage.
-allowed-tools: Read, Bash, Glob, Grep, Task, Write, Edit
----
-
-# Renovate PR Triage Skill
+# Renovate PR Triage Rules
 
 Triage and manage automated dependency update PRs across the conforma and enterprise-contract GitHub orgs. Categorizes PRs by risk, verifies Go container image availability, detects merge cascades, and coordinates approved actions (approve + auto-merge, or close with comment).
 
@@ -15,10 +9,10 @@ Triage and manage automated dependency update PRs across the conforma and enterp
 - Checking which dependency PRs are safe to merge
 - Cleaning up stale or abandoned automated PRs
 
-## Commands
+## Skills
 
-- `/renovate-triage` — Analyze all open automated PRs, categorize them, write a triage report
-- `/renovate-act` — Execute approved actions from a triage report
+- `renovate-triage` — Analyze open automated PRs, categorize them, and write a triage report.
+- `renovate-act` — Execute user-approved actions from a triage report.
 
 ## Categorization Rules
 
@@ -30,7 +24,7 @@ Each PR is classified into exactly one category. Categories are evaluated in pri
 
 **Action:** Close with comment.
 
-**How to detect:** Parse the shared Renovate config from `conforma/.github/config/renovate/renovate.json` and extract `baseBranchPatterns`. Current patterns target `main` and `release-v0.7+`. Compare each PR's `baseRefName` against these patterns. A PR targeting `release-v0.5` or `release-v0.6` is on an abandoned branch.
+**How to detect:** Parse the shared Renovate config from `conforma/.github/config/renovate/renovate.json` and extract `baseBranchPatterns`. Current patterns target `main` and `release-v0.7+`. Compare each PR's extracted `base_branch` against these patterns unless it is `"unknown"`, in which case skip the pattern comparison. The independent title suffix signal still applies. A PR targeting `release-v0.5` or `release-v0.6` is on an abandoned branch.
 
 **Fetch the config:**
 ```bash
@@ -51,6 +45,9 @@ The Renovate config is a strong heuristic, not gospel truth. Always explain the 
 **Action:** Close the older PR with comment referencing the newer one.
 
 **Detection rules:**
+
+If a PR's `base_branch` is `"unknown"`, skip superseded detection for that PR. It must not be grouped with other PRs whose branches are also unknown.
+
 1. Match on `(repo, base_branch, dependency_group)`:
    - Extract the dependency group from the **PR title** (preferred) or Renovate head branch name if available
    - From titles: "Update go modules ..." → `go-modules`, "Update module github.com/go-git/go-billy/v5 ..." → `go-billy`, "Update GitHub Actions ..." → `github-actions`
@@ -155,7 +152,7 @@ PRs on the same `(repo, base_branch)` that update the same dependency ecosystem 
 - `konflux`: PRs updating Konflux references or RPM lockfiles
 - `other`: Everything else
 
-**Detection:** Group PRs by `(repo, base_branch, ecosystem)`. Groups with 2+ PRs are cascade groups.
+**Detection:** Exclude PRs with `base_branch == "unknown"` before grouping; do not combine them into a shared unknown-branch group. Group the remaining PRs by `(repo, base_branch, ecosystem)`. Groups with 2+ PRs are cascade groups.
 
 **Recommended merge order within a cascade:** Security updates first, then patches, then minor, then major. Within the same update type, smaller PRs first.
 
@@ -171,11 +168,11 @@ PRs on the same `(repo, base_branch)` that update the same dependency ecosystem 
 
 ## Report Location
 
-Reports are written to `.claude/reports/`:
-- `.claude/reports/renovate-triage-{YYYY-MM-DD}.json` — structured data for `/renovate-act`
-- `.claude/reports/renovate-triage-{YYYY-MM-DD}.md` — human-readable report
+Reports are written under `.conforma/reports/` in the current project directory:
+- `.conforma/reports/renovate-triage-{YYYY-MM-DD}.json` — structured data for the `renovate-act` skill.
+- `.conforma/reports/renovate-triage-{YYYY-MM-DD}.md` — human-readable report.
 
-This directory is gitignored. The `/renovate-act` command reads the latest JSON from this directory.
+This directory is gitignored. By default, the `renovate-act` skill reads the latest JSON from this directory; a user-provided report path may point elsewhere.
 
 ## Close Comment Templates
 
