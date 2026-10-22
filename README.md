@@ -1,6 +1,6 @@
 # Conforma Agent Skills
 
-Reusable, Markdown-based agent instructions for Conforma policy work, Jira sprint workflows, and repository maintenance. The skill content does not depend on a particular model or agent harness. Harness-specific discovery, invocation, permissions, and MCP configuration remain the responsibility of the client.
+Reusable, Markdown-based agent instructions for Conforma policy work, Jira sprint workflows, vulnerability patching, and repository maintenance. The skill content does not depend on a particular model or agent harness. Harness-specific discovery, invocation, permissions, and MCP configuration remain the responsibility of the client.
 
 ## Use the skills
 
@@ -10,7 +10,7 @@ Clone the collection:
 git clone https://github.com/conforma/agent-skills.git
 ```
 
-Preserve the complete `skills/` tree, including each skill's references, templates, examples, and helper scripts. Install it in a directory supported by your agent harness. There is no single discovery path shared by all harnesses.
+Preserve the complete `skills/` tree, including each skill's references, templates, examples, scripts, and helper files. Install it in a directory supported by your agent harness. There is no single discovery path shared by all harnesses.
 
 If your harness does not discover Agent Skills, give any tool-capable agent the path to the relevant `SKILL.md` and ask it to read and follow the instructions. For example:
 
@@ -18,7 +18,7 @@ If your harness does not discover Agent Skills, give any tool-capable agent the 
 
 The collection follows the `SKILL.md` name/description convention. Some clients discover skills automatically; others require a client-specific install location or an explicit file path. Check the active harness documentation for discovery and invocation behavior. Resource links are relative to each skill file, not the current working directory.
 
-When installing a subset, include linked resources and skills: `ec-debug-violations` uses `ec-policy-debugging` and `ec-setup`; `ec-policy-debugging` links to `ec-setup`; `groom` uses the sprint-triage reference; and `renovate-act` uses the Renovate triage rules reference.
+When installing a subset, include linked resources and skills: `ec-debug-violations` uses `ec-policy-debugging` and `ec-setup`; `ec-policy-debugging` links to `ec-setup`; `groom` uses the sprint-triage reference; and `renovate-act` uses the Renovate triage rules reference. Copy the entire `vuln-patcher` directory, including its `scripts/` folder.
 
 ### Client-specific examples
 
@@ -46,6 +46,7 @@ Client conventions change. Confirm native discovery paths and command syntax in 
 | [`scaffold-repo`](skills/scaffold-repo/SKILL.md) | Assess a repository with AgentReady and guide approved improvements. | AgentReady CLI |
 | [`sprint-report`](skills/sprint-report/SKILL.md) | Report mid-sprint additions, with optional Slack posting. | Jira MCP; Slack MCP for posting |
 | [`sprint-triage`](skills/sprint-triage/SKILL.md) | Assess Jira stories in the current sprint for implementation readiness. | Existing MCP tools `mcp__work-assistant__jira_sprint_issues` and `mcp__work-assistant__jira_get_issue` |
+| [`vuln-patcher`](skills/vuln-patcher/SKILL.md) | Classify Conforma vulnerability tickets and prepare verified UBI RPM or Go-module patches. | Jira read access; verified Conforma CLI checkout; tools and registry access depend on remediation class. Stops before push or PR creation pending approval. |
 | [`write-rule`](skills/write-rule/SKILL.md) | Write a Rego policy rule and tests from a requirements file. | OPA and Conforma policy references |
 
 The skills specify their inputs, outputs, and required operations. They do not grant tool access. Configure MCP servers, credentials, command execution, file access, and user approvals in the active harness. Jira and Slack MCP tool names and calls are retained as documented in the skills.

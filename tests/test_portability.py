@@ -23,6 +23,7 @@ EXPECTED_SKILLS = {
     "scaffold-repo",
     "sprint-report",
     "sprint-triage",
+    "vuln-patcher",
     "write-rule",
 }
 
@@ -77,6 +78,10 @@ def assert_skill_catalog(skills_root):
 
 def test_skill_catalog_and_local_links():
     assert_skill_catalog(SKILLS)
+    vuln_scripts = (SKILLS / "vuln-patcher" / "scripts")
+    assert {"active-release-branches.sh", "assess.sh"} <= {
+        path.name for path in vuln_scripts.iterdir()
+    }
     missing_links = markdown_links_exist(ROOT)
     assert not missing_links, missing_links
     instructions = "\n".join(
