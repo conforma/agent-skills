@@ -1,145 +1,85 @@
 # Generate Policy Skill
 
-Generate complete Conforma validation setups for container images. You don't need to know Rego, Conforma, or SBOM formats - just describe what you want to validate.
+Describe what a container image policy should check, and this skill generates a Conforma policy set with rules, tests, configuration, and a validation command. You do not need to know Rego or the attestation formats.
 
-## Quick Start
+## Quick start
 
-Invoke the skill with a prompt like:
+Ask your agent to use the `generate-policy` skill with one of the prompts below, or ask it to read [SKILL.md](SKILL.md) and follow its workflow.
 
+## Inputs
+
+| Input | When needed | Example |
+|-------|-------------|---------|
+| Policy set name and validation requirement | Always | `package_sources`; “Allow npm packages only from registry.npmjs.org” |
+| Rule-specific values | When the rule needs them | Approved registries, allowed builder IDs, or expected source repository |
+| Image reference | To validate the generated policy against an image | `quay.io/org/app@sha256:...` |
+| Public key | When validating an image signed with that key | `cosign.pub` or the key contents |
+
+An image is optional. Without one, the agent can generate the policy and run its Rego tests; image validation requires an image reference.
+
+## Example prompts
+
+### Package sources in an SBOM
+
+```text
+Use the generate-policy skill to create a policy set named package_sources.
+Check distribution URLs for npm components in CycloneDX SBOMs. Allow only
+URLs under https://registry.npmjs.org/. Store the allowed URL pattern in
+rule data, and deny components fetched from any other source.
+
+Generate the Rego rule, tests, policy.yaml, and rule-data file. Cover
+allowed and disallowed URLs, missing distribution URLs, and an empty
+allowlist in the tests. Run the Rego tests and report the results.
+I do not have an image to validate yet.
 ```
-Create a policy to ensure all npm packages come from registry.npmjs.org
+
+### Builder identity in SLSA provenance
+
+```text
+Use the generate-policy skill to create a policy set named approved_builders.
+Check SLSA provenance v0.2 and v1.0 attestations. Allow only builder ID
+https://tekton.dev/chains/v2. Store the allowed builder IDs in rule data.
+Deny attestations with a missing or unapproved builder ID.
+
+Generate the Rego rule, tests, policy.yaml, and rule-data file. Include
+every Rego dependency in the policy configuration. Test both provenance
+versions, missing builder IDs, unapproved IDs, and an empty allowlist.
+Run the Rego tests and report the results. I do not have an image to
+validate yet.
 ```
 
-Or tell your agent to read this skill's `SKILL.md` and provide the required inputs.
+## What the skill creates
 
-## What You Provide
+```text
+<policy_set>/
+├── policy.yaml
+├── data/
+│   └── <rule_data>.yaml
+└── policy/
+    └── <rule_name>/
+        ├── <rule_name>.rego
+        └── <rule_name>_test.rego
+```
 
-| Input | Required | Example |
-|-------|----------|---------|
-| Policy set name | Yes | `registry_validation` |
-| Validation requirements | Yes | "Ensure packages come from approved sources" |
-| Image reference | Yes | `quay.io/org/app@sha256:abc123...` |
-| Public key file | Optional | `cosign.pub` |
-| Builder IDs | For SLSA provenance rules | `["https://tekton.dev/chains/v2"]` |
-| Source repository | For SLSA provenance correlation | `https://github.com/org/repo` |
-| Build type | For SLSA provenance rules | `"tekton.dev/v1/PipelineRun"` |
+The skill can generate rules for:
 
-The skill will prompt you for any missing information.
+- **SBOM contents:** Check packages, package sources, licenses, and OCI package registry URLs recorded in an image's SBOM.
+- **SLSA build provenance:** Check attestation fields such as builder identity, source repository, and build type.
 
-## What Gets Generated
+## Verify the result
 
-| Artifact | Location | Description |
-|----------|----------|-------------|
-| Policy rule | `<policy_set>/policy/<rule>/<rule>.rego` | Rego v1 validation rule |
-| Tests | `<policy_set>/policy/<rule>/<rule>_test.rego` | Comprehensive test coverage |
-| Policy config | `<policy_set>/policy.yaml` | Conforma configuration |
-| Rule data | `<policy_set>/data/*.yaml` | Configuration data for rules |
-| Public key | `<policy_set>/cosign.pub` | Public key for signature verification |
-| Conforma command | (displayed) | Ready-to-run validation command |
-
-### Policy Domains
-
-The skill supports two complementary policy domains:
-
-- **SBOM composition** — validates what is inside the image, such as packages,
-  components, registries, and licenses. SBOM rules use the local SBOM access
-  library when they need to retrieve SBOM data.
-- **SLSA build provenance** — validates how the image was built, such as the
-  builder identity, source repository, and build type. Provenance rules use
-  Conforma's runtime `data.lib` helpers and do not require the local
-  `policy/lib/sbom.rego` library.
-
-## Example Prompts
-
-**SBOM / Package Source Validation**
-- "Create a policy to ensure all npm packages come from registry.npmjs.org"
-- "Validate that my image only uses packages from approved sources"
-- "Block packages downloaded from untrusted registries"
-
-**Registry Validation**
-- "Verify container images come from approved registries"
-- "Only allow images from quay.io and registry.redhat.io"
-
-**License Compliance**
-- "Ensure all packages have declared licenses"
-- "Block packages with NOASSERTION license"
-
-**SLSA Provenance Validation**
-- "Ensure images are built by our approved Tekton pipeline"
-- "Validate SLSA provenance shows builds from authorized source repositories"
-- "Enforce builder ID matches our CI/CD system"
-
-For complete SLSA builder ID examples, see the [v0.2 PASS example](examples/07-slsa-v02-builder-id-validation-pass.md), the [v1.0 FAIL example](examples/08-slsa-v1-builder-id-validation-fail.md), and the [SLSA provenance structure reference](reference/slsa-provenance-structure.md).
-
-## Generated Command
-
-After generating the policy, run the validation from within the policy set directory:
+From the generated policy set directory, run the Rego tests:
 
 ```bash
-cd <policy_set>
-
-ec validate image \
-  --image quay.io/org/app@sha256:abc123... \
-  --policy policy.yaml \
-  --public-key cosign.pub \
-  --ignore-rekor \
-  --output text \
-  --info
+ec opa test ./policy -v --fail-on-empty
 ```
 
-**Important**: The command must be run from the policy set directory because `policy.yaml` references rules with relative paths (`./policy/<rule_name>`).
+When you provide an image, the agent also runs `ec validate image` and checks that the result matches the requested policy. Run the supplied validation command from the policy set directory so the relative paths in `policy.yaml` resolve. If you provided a public key file, the command includes `--public-key cosign.pub`; other verification options depend on your signing setup.
 
-## Example Workflow
+## Examples and references
 
-1. **Invoke the skill**
-   ```
-   Create a policy set called "registry_validation" that validates container images come from approved registries
-   ```
-
-2. **Provide inputs when prompted**
-   - Image reference: `quay.io/myorg/myapp@sha256:...`
-   - Public key: (provided inline or as file)
-   - Approved registries: `quay.io, registry.redhat.io`
-
-3. **Review generated files**
-   ```
-   registry_validation/
-   ├── policy.yaml
-   ├── cosign.pub
-   ├── data/
-   │   └── approved_registries.yaml
-   └── policy/
-       ├── lib/
-       │   └── sbom.rego
-       └── approved_image_registries/
-           ├── approved_image_registries.rego
-           └── approved_image_registries_test.rego
-   ```
-
-4. **Run the tests**
-   ```bash
-   cd registry_validation
-   ec opa test . -v
-   ```
-
-5. **Run the validation**
-   ```bash
-   cd registry_validation
-
-   ec validate image \
-     --image quay.io/myorg/myapp@sha256:... \
-     --policy policy.yaml \
-     --public-key cosign.pub \
-     --ignore-rekor \
-     --output text \
-     --info
-   ```
-
-## Running Tests
-
-Test the generated rules with OPA from within the policy set directory:
-
-```bash
-cd <policy_set>
-ec opa test . -v
-```
+- [Package source rules and SBOM structure](reference/sbom-structure.md)
+- [OCI package registry validation from an SPDX SBOM](examples/01-registry-validation-pass.md)
+- [License compliance](examples/02-license-compliance-fail.md)
+- [SLSA v0.2 builder ID validation](examples/07-slsa-v02-builder-id-validation-pass.md) and [SLSA v1.0 builder ID validation](examples/08-slsa-v1-builder-id-validation-fail.md)
+- [Policy configuration reference](reference/policy-config.md) and [test patterns](reference/test-patterns.md)

@@ -39,7 +39,7 @@ When a user requests policy validation, generate these artifacts:
 1. **Gather requirements** - Ask what the user wants to validate
 2. **Prompt for required inputs** - See domain references for what to ask (e.g., `allowed_package_sources` for SBOM rules)
 3. **Generate artifacts** - Create files with directory matching package name (for Rego lint compliance)
-4. **VERIFY: Run OPA tests** - Run `ec opa test ./policy -v` and ensure ALL tests pass
+4. **VERIFY: Run OPA tests** - Run `ec opa test ./policy -v --fail-on-empty` and ensure ALL tests pass
 5. **VERIFY: Run EC validation** - If image provided, run `ec validate image` and verify expected results
 6. **Report results** - Only after verification passes, provide the Conforma command and next steps
 
@@ -55,11 +55,12 @@ After creating all Rego files, you MUST run the tests:
 
 ```bash
 cd <policy_set_directory>
-ec opa test ./policy -v --ignore '*.rego' --ignore 'lib/*'
+ec opa test ./policy -v --fail-on-empty
 ```
 
-**Note**: We exclude `lib/*` because `sbom.rego` uses `ec.oci.blob()` which OPA can't parse.
-Tests must mock `data.lib.sbom.spdx_sboms` directly.
+For SBOM rules, tests must mock `data.lib.sbom.spdx_sboms` or
+`data.lib.sbom.cyclonedx_sboms` directly so they do not fetch OCI blobs.
+`--fail-on-empty` prevents a missing or ignored test file from appearing successful.
 
 **Requirements:**
 - ALL tests must pass (exit code 0)
@@ -75,11 +76,13 @@ cd <policy_set_directory>
 ec validate image \
   --image <IMAGE_REFERENCE> \
   --policy policy.yaml \
-  --public-key cosign.pub \
-  --ignore-rekor \
   --output text \
   --info
 ```
+
+Add `--public-key cosign.pub` when the user supplied a public key. Choose
+signature and Rekor options to match the user's verification setup; use
+`--ignore-rekor` only when intentionally skipping transparency log checks.
 
 **Requirements:**
 - Verify the output matches expectations:
@@ -174,11 +177,10 @@ For any rule that validates SBOM data, you MUST:
 
 **How it works:**
 - The library uses `ec.oci.blob()` to fetch SBOMs from OCI blobs referenced in SLSA provenance
-- `ec.oci.blob()` is an EC built-in function that OPA doesn't understand
-- Tests MUST mock `data.lib.sbom.spdx_sboms` directly to bypass the library implementation
+- Tests MUST mock `data.lib.sbom.spdx_sboms` or `data.lib.sbom.cyclonedx_sboms` directly to avoid fetching blobs
 - At EC runtime, the library fetches real SBOMs from OCI registries
 
-**Testing Note**: OPA tests will fail if they try to evaluate `sbom.rego` directly because OPA can't parse `ec.oci.blob()`. Always mock `data.lib.sbom.spdx_sboms` in tests.
+**Testing Note**: Keep SBOM tests deterministic by mocking the relevant SBOM value in `data.lib.sbom`. The OPA test command loads the library along with the rules and tests.
 
 **DO NOT** iterate directly over `input.attestations` for SBOM data - always use the library.
 
@@ -235,11 +237,12 @@ Run from within the policy set directory (e.g., `cd release_policies`):
 ec validate image \
   --image <IMAGE_REFERENCE> \
   --policy policy.yaml \
-  --public-key cosign.pub \
-  --ignore-rekor \
   --output text \
   --info
 ```
+
+Add `--public-key cosign.pub` when the user supplied a public key. Adjust
+the signature and Rekor options to match the user's verification setup.
 
 **Important**: The `policy.yaml` references rules with relative paths (`./policy/<rule_name>`), so the command must be run from the policy set directory where `policy.yaml` is located.
 
@@ -494,7 +497,7 @@ Users can refine generated policies through follow-up conversational requests. T
 2. **User requests a change** — e.g., "pin the builder to our Tekton instance", "add an exception for test builds", "tighten the allowed registries"
 3. **Modify existing files** — Edit the generated `.rego`, `_test.rego`, and data files in place rather than regenerating from scratch
 4. **Re-run verification** — After every refinement, re-run both verification steps:
-   - `ec opa test ./policy -v --ignore 'lib/*'` (OPA tests)
+   - `ec opa test ./policy -v --fail-on-empty` (OPA tests)
    - `ec validate image ...` (EC validation, if image provided)
 5. **Report updated results** — Only report success after verification passes
 

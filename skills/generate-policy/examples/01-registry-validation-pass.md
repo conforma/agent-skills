@@ -1,6 +1,6 @@
 # Example 1: Registry Validation (PASS)
 
-This policy validates that container images come from approved registries. **This will PASS** because `quay.io` is in the allowed list.
+This policy validates OCI package registry URLs recorded in the image's SPDX SBOM. **This will PASS** because `quay.io` is in the allowed list.
 
 ---
 
@@ -20,7 +20,7 @@ naYJRuLprwIv6FDhZ5yFjYUEtsmoNcW7rx2KM6FOXGsCX3BNc7qhHELT+g==
 
 Rule: approved_image_registries
 - Check OCI PURL repository_url in SPDX packages
-- Approved registries: registry.redhat.io, registry.access.redhat.com
+- Approved registries: quay.io, registry.redhat.io, registry.access.redhat.com
 - Severity: failure
 ```
 
