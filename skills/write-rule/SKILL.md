@@ -1,17 +1,19 @@
+---
+name: write-rule
+description: Create a Conforma or Enterprise Contract Rego policy rule and test from a Markdown requirements file.
+---
+
 # Write Conforma Policy Rule
 
 Write a new Conforma/EC policy rule based on requirements provided in a markdown file.
 
-## Usage
+## Input
 
-Invoke with a path to a requirements markdown file:
-```
-/write-rule path/to/requirements.md
-```
+Provide a path to a Markdown requirements file. Ask for the path if it is missing. An example requirements file is available at [templates/rule-requirements.md](templates/rule-requirements.md).
 
 ## Requirements File Format
 
-The requirements markdown file should contain these sections:
+The requirements Markdown file should contain these sections:
 
 ```markdown
 # Rule Requirements
@@ -47,10 +49,10 @@ Skip when field Y is set to "exempt"
 
 ## Process
 
-1. Read the requirements from the provided markdown file at: $ARGUMENTS
-2. Examine the sample input to understand the data structure
-3. Identify the path to the relevant data in the attestation
-4. Write the rule following patterns from the rego_engineering skill
+1. Read the requirements from the user-provided file.
+2. Examine the sample input to understand the data structure.
+3. Identify the path to the relevant data in the attestation.
+4. Write the rule following the [Rego engineering reference](references/rego_engineering.md).
 5. Include complete METADATA annotations
 6. Format with `opa fmt`
 7. Generate a unit test

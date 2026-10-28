@@ -1,7 +1,6 @@
 ---
 name: ec-policy-debugging
 description: Debug Enterprise Contract policy violations by examining rule metadata, tests, and actual data. Use when investigating EC validation failures, policy violations, or understanding why a rule triggered.
-allowed-tools: Read, Bash, Glob, Grep, Task
 ---
 
 # EC Policy Debugging Skill
@@ -55,8 +54,10 @@ When you encounter a violation:
 
 ## Summarize Violations
 
+Resolve `summarize_violations.py` relative to this `SKILL.md` and invoke it with the log path:
+
 ```bash
-python3 summarize_violations.py <LOG_FILE>
+python3 "<resolved path to summarize_violations.py>" "<LOG_FILE>"
 ```
 
 Supports two log formats:
@@ -70,9 +71,9 @@ grep -oE '"code":\s*"[^"]+"' <LOG_FILE> | sort | uniq -c | sort -rn
 
 ## Testing
 
-Run tests for the summarize script:
+Run the helper tests with Python 3 and pytest. Resolve the test-file path relative to this `SKILL.md`:
 ```bash
-pytest .claude/skills/ec-policy-debugging/ -v
+python3 -m pytest -q "<resolved path to summarize_violations_test.py>"
 ```
 
 Test coverage:

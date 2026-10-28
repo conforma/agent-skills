@@ -1,16 +1,15 @@
 ---
-description: Set up EC validation debugging environment from a Conforma log file
-argument-hint: <log-file-path>
-allowed-tools: Read, Write, Bash, Glob, Grep
+name: ec-setup
+description: Reproduce Conforma image validation locally from a log by extracting its snapshot, policy configuration, and verification key.
 ---
 
 # EC Validation Debugging Setup
 
 Set up a local debugging environment by extracting configuration from a Conforma validation log to reproduce the `ec validate image` command.
 
-## Instructions
+## Input
 
-You will be given a log file path as `$ARGUMENTS`. If no argument is provided, prompt the user for the log file path.
+Provide the path to the Conforma validation log. If it is missing, ask the user for it.
 
 The log contains key sections marked by headers (case-insensitive, sometimes followed by ` :-`):
 - `STEP-REDUCE` - Contains the snapshot JSON with the application name and component list
@@ -18,7 +17,7 @@ The log contains key sections marked by headers (case-insensitive, sometimes fol
 
 ## Step 1: Read the Log File
 
-Read the provided log file: `$ARGUMENTS`
+Inspect the provided log file.
 
 ## Step 2: Extract the Snapshot
 
@@ -45,7 +44,7 @@ Example snapshot format:
 
 ## Step 3: Create Output Directory
 
-Create a new directory to contain all generated files using this naming convention:
+Create the output directory under the user's current project or task directory, not alongside the installed skill. Use this naming convention:
 ```
 <policy-source-name>-<application-name>
 ```
@@ -133,4 +132,6 @@ After setup is complete, inform the user:
 - The output directory location
 - The number of components in the snapshot
 - How to run validation: `./run.sh`
-- How to debug violations: Use the ec-policy-debugging skill or ask about specific violations
+- How to debug violations: Use the `ec-debug-violations` skill or ask about specific violations
+
+When the output contains `snapshot.json`, `policy.yaml`, and `policy/release/`, `ec-debug-violations` can discover it automatically when run from the same project/task directory. If several candidates exist or you run it elsewhere, provide this output path with `--setup-dir`. Use `--policy` to supply a policy configuration directly.
