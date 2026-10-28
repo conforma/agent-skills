@@ -74,7 +74,7 @@ From the generated policy set directory, run the Rego tests:
 ec opa test ./policy -v --fail-on-empty
 ```
 
-When you provide an image, the agent also runs `ec validate image` and checks that the result matches the requested policy. Run the supplied validation command from the policy set directory so the relative paths in `policy.yaml` resolve. If you provided a public key file, the command includes `--public-key cosign.pub`; other verification options depend on your signing setup.
+The skill outputs an `ec validate image` command for the generated policy. If you provide an image reference, the agent also runs the command and checks that the result matches your requirements. Run the command from the policy set directory so the relative paths in `policy.yaml` resolve. If you provided a public key file, the command includes `--public-key cosign.pub`; other verification options depend on your signing setup.
 
 ## Examples and references
 
