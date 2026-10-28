@@ -55,6 +55,15 @@ Derive the components from:
 
 If `STEP-SHOW-CONFIG` is not present, use just `<application-name>` as the directory name.
 
+**Before creating the directory**, check whether it already exists. If it does:
+1. List the files that would be overwritten (e.g., `snapshot.json`, `policy.yaml`, `key.pub`, `run.sh`, and any `policy/` subtree)
+2. Ask the user to choose one of:
+   - **Overwrite** — remove the existing directory contents and proceed
+   - **New directory** — append a numeric suffix (e.g., `-2`, `-3`) to the directory name and use that instead
+   - **Abort** — stop setup without writing any files
+
+Do not proceed until the user confirms. This prevents reruns from silently destroying user changes to previously generated files.
+
 ## Step 4: Save the Snapshot
 
 Save the snapshot JSON (from Step 2) as `snapshot.json` in the output directory.
