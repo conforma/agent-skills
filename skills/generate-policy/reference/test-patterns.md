@@ -34,14 +34,14 @@ test_<descriptive_name> if {
 ## Running Tests
 
 ```bash
-# Run all tests in directory
-ec opa test . -v
+# From the generated policy set directory, run all rule tests
+ec opa test ./policy -v --fail-on-empty
 
 # Run with coverage
-ec opa test . --coverage
+ec opa test ./policy --coverage --fail-on-empty
 
 # Run specific tests
-ec opa test . -v --run "test_allowed"
+ec opa test ./policy -v --run "test_allowed" --fail-on-empty
 ```
 
 ## Mock Data Patterns
