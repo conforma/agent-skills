@@ -133,6 +133,14 @@ def test_skill_catalog_and_local_links():
     assert 'skip superseded detection for that PR' in triage_rules
     assert 'Exclude PRs with `base_branch == "unknown"` before grouping' in triage_rules
     assert 'Exclude PRs with `base_branch == "unknown"` before grouping' in renovate_triage
+    # Abandoned-branch detection must state the negative condition (#33)
+    abandoned_section = renovate_triage[
+        renovate_triage.index("Abandoned branch") : renovate_triage.index("Superseded")
+    ]
+    assert re.search(
+        r"(?i)does not match|outside|not.+match|falls outside",
+        abandoned_section,
+    ), "SKILL.md must explicitly state the negative condition for abandoned-branch detection"
 
 
 def test_helper_runs_from_a_relocated_collection_and_other_working_directory():
