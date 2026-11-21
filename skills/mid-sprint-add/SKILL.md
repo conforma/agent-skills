@@ -9,10 +9,10 @@ Tag a Jira issue as a mid-sprint addition with a structured comment and optional
 
 ## Prerequisites
 
-This skill requires access to Jira through an MCP server (for example, mcp-atlassian) or an equivalent configured integration. If no Jira MCP tools are available, stop and tell the user:
+This skill requires access to Jira through an MCP server (for example, mcp-atlassian) or an equivalent configured integration. If no Jira integration is available, stop and tell the user:
 
-> This skill requires a Jira MCP server to be configured in the active harness.
-> Configure the Jira MCP integration using your harness's setup instructions.
+> This skill requires a Jira integration to be configured.
+> Configure a Jira integration (MCP server or equivalent) using your harness's setup instructions.
 >
 > You can manually add this comment to the Jira issue:
 > ```text
