@@ -103,7 +103,7 @@ Apply the [Renovate triage rules](references/triage-rules.md). Process each PR t
 
 For each PR, evaluate in this order:
 
-1. **Abandoned branch**: If `base_branch` is not `"unknown"`, does it match an active `baseBranchPattern`? Independently, does the title end with `- abandoned`?
+1. **Abandoned branch**: If `base_branch` is not `"unknown"`, check whether it falls outside all active `baseBranchPatterns` — a branch that does not match any pattern is abandoned. Independently, does the title end with `- abandoned`?
 2. **Superseded**: If `base_branch` is not `"unknown"`, is there another open PR in the results with the same `(repo, base_branch, dependency_group)` targeting a higher version? (See "Extracting dependency group" below.)
 3. **Security**: Does the title contain `[SECURITY]` or `[security]` (case-insensitive)? Does it have a `security` label?
 4. **Go version bump**: Does the title match Go version patterns (see the Renovate triage rules, Priority 4)?
